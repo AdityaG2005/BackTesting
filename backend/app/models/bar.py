@@ -6,7 +6,7 @@ class Bar(Base):
 
     id = Column(Integer, primary_key=True)
     instrument_id = Column(Integer, ForeignKey("instruments.id"), nullable=False)
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     open = Column(Float, nullable=False)
     high = Column(Float, nullable=False)
     low = Column(Float, nullable=False)
