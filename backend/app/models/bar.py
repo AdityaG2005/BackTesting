@@ -4,7 +4,7 @@ from app.db.session import Base
 class Bar(Base):
     __tablename__ = "bars"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     instrument_id = Column(Integer, ForeignKey("instruments.id"), nullable=False)
     timestamp = Column(DateTime(timezone=True), primary_key=True, nullable=False)
     open = Column(Float, nullable=False)
@@ -12,4 +12,5 @@ class Bar(Base):
     low = Column(Float, nullable=False)
     close = Column(Float, nullable=False)
     volume = Column(Float, nullable=False)
+
     
