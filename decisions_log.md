@@ -18,4 +18,17 @@
 - **RSI signals on every bar a threshold condition holds, not just the first crossing** — a deliberate simplification for Day 2; the simulation engine (Day 3) will decide how repeated signals translate into actual trade/position behavior, rather than baking that decision into the strategy itself.
 
 
+## Day 3
+
+- **Fill at next bar's open, never current bar's close** — the core anti-lookahead-bias mechanism. A signal generated using bar N's data can only realistically be acted on starting bar N+1, since in real life you wouldn't have known about the signal until bar N fully closed.
+- **Slippage always works against the trader (buy higher, sell lower)** — deliberately pessimistic/conservative assumption; better to slightly understate simulated returns than overstate them with unrealistically perfect fills.
+- **All-in position sizing for now** — chosen to isolate and verify the fill/tracking mechanism's correctness before adding a second variable (how much to risk per trade). A configurable position sizer is a planned next step, not a missed requirement.
+- **is_open and pnl on Trade implemented as @property, not stored fields** — avoids the two ever going out of sync with the actual source of truth (exit_timestamp/exit_price).
+- **Each BacktestEngine instance owns its own Portfolio/OrderMatcher** — no shared/global state, so multiple backtests could run concurrently without interfering with each other later.
+- **Raw return % alone isn't a valid success metric** — 87% return on paper means nothing without knowing the risk taken to get there (Sharpe), the worst drawdown experienced, or how it compares to a passive buy-and-hold baseline. Day 4 exists specifically to answer "was this actually good," not just "did it make money."
+
+
+
+
+
 

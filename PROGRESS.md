@@ -40,3 +40,20 @@
 - No error handling around on_bar() calls if a strategy throws mid-replay
 - RSI fires every day a threshold condition holds, not just on first crossing — engine will need to decide how to interpret repeated signals (Day 3)
 
+
+## Day 3 — Event-driven simulation engine
+
+**Built:**
+- Order, Trade, Position dataclasses (app/core/portfolio.py) — Trade has is_open and pnl as computed properties
+- OrderMatcher (app/core/order_matcher.py) — slippage (0.1%) always works against the trader, commission (0.1%) on trade value
+- Portfolio (app/core/portfolio.py) — tracks cash/position, only acts on BUY if flat / SELL if holding, all-in position sizing, maintains trade log
+- BacktestEngine (app/core/engine.py) — core event loop; replays bars in time order, fills signals at NEXT bar's open (not current bar), builds equity curve day by day
+- End-to-end test (test_engine.py): MovingAverageCrossover on AAPL 2020-2024 → $10,000 to $18,705.26 (87.05% return), 11 trades, 1 left open at data end
+
+**Left for later days:**
+- Position sizing is "all-in" — no fractional/risk-based sizing yet (planned, matches project plan's stated requirement)
+- Long-only, single position at a time — no shorting, no scaling in/out
+- No error handling if a strategy throws mid-replay
+- No way yet to judge if 87% return is actually "good" — no Sharpe, drawdown, or benchmark comparison (Day 4)
+
+
