@@ -30,5 +30,13 @@
 
 
 
+## Day 4
+
+- **Sortino only penalizes downside returns in its denominator, while Sharpe penalizes all volatility** — deliberate distinction per each metric's definition, not an inconsistency. A lower Sortino than Sharpe on the same strategy is a real signal that its volatility skews toward downside moves specifically.
+- **CAGR uses 252 trading days, not 365.25 calendar days** — equity_curve entries are per trading day (from bar-by-bar replay), so years must be computed as num_trading_days / 252. Originally implemented with 365.25 (a real bug), caught via toy-data sanity check before trusting it on real results.
+- **Toy-data sanity checks run before real-data tests** — per the project's own stated principle: real data makes a plausible-but-wrong number hard to catch by eye; a hand-computed 5-day series makes correctness verifiable exactly, not just "looks about right."
+- **Lookahead-bias check samples 4 spread-out points (25/50/75/last), not every bar** — pragmatic MVP tradeoff; a real bug would typically show up consistently rather than at only isolated bars, so sampling is a reasonable sanity check without being a fully exhaustive proof.
+- **Bias check uses a strategy_factory (fresh instance per run) rather than reusing one strategy object** — eliminates any risk of leftover internal state contaminating the full-vs-truncated comparison.
+
 
 

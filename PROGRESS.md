@@ -57,3 +57,20 @@
 - No way yet to judge if 87% return is actually "good" — no Sharpe, drawdown, or benchmark comparison (Day 4)
 
 
+## Day 4 — Performance metrics + lookahead-bias validation
+
+**Built:**
+- metrics.py: calculate_sharpe, calculate_sortino, calculate_cagr, calculate_max_drawdown, calculate_win_rate
+- Toy-data sanity test (test_metrics_sanity.py) — verified daily returns and max drawdown by hand; caught a real CAGR bug (was using 365.25 calendar days instead of 252 trading days)
+- Real metrics test (test_metrics_real.py) — ran full metric suite on Day 3's AAPL MA Crossover result:
+  CAGR 16.98%, Sharpe 0.84, Sortino 0.68, Max drawdown 23.12%, Win rate 60%
+- Lookahead-bias regression test (bias_check.py) — compares strategy signal on full vs. truncated data at the same check point; both MovingAverageCrossover and RSIMeanReversion pass
+- Combined report script (generate_report.py) — metrics + bias check status in one readable output
+
+**Left for later days:**
+- Bias check only samples 4 points (25/50/75/last), not exhaustive across every bar
+- No NLP strategy layer, no async API, no frontend dashboard yet (Days 5-6)
+- Report is currently script/terminal output only — not exposed via API or UI
+
+
+
