@@ -40,3 +40,16 @@
 
 
 
+
+## Day 5
+
+- **Gemini (primary) + Groq (fallback) instead of Anthropic** — both offer genuinely free tiers with no card required, unlike Anthropic at the time of building this. Automatic fallback on failure was tested for real (Gemini's model deprecation triggered it), not just designed hypothetically.
+- **include=["app.core.tasks"] in celery_app.py** — required because Celery only registers @celery_app.task-decorated functions if the module defining them is actually imported; without this, the worker silently has an empty task list.
+- **--pool=solo for the Celery worker** — Windows-specific workaround since the default prefork pool relies on Unix-only os.fork(). Known tradeoff: no task concurrency in dev; production (likely Linux) would use a different pool.
+- **Two-gate + bias-check validation for NLP-generated code, not just a syntax check** — a syntactically valid strategy can still be logically wrong (e.g. accidentally referencing future data). Reusing the Day 4 lookahead-bias check against real market data catches behavioral bugs a syntax check cannot.
+- **exec() restricted namespace is NOT true sandboxing** — it limits which names are pre-available (Strategy/Signal/SignalType only) but does not prevent imports, filesystem access, or network calls. True sandboxing (restricted imports, timeouts, no filesystem/network) is deliberately deferred to Day 7, applied to both NLP-generated and user-submitted code paths.
+- **python -m pip / python -m uvicorn / python -m celery instead of direct .exe calls** — Windows Smart App Control blocked the standalone executables; routing through python.exe (already trusted) sidesteps this without disabling a security feature that cannot be re-enabled once turned off.
+
+
+
+

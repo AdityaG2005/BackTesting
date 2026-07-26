@@ -74,3 +74,30 @@
 
 
 
+## Day 5 — API layer + Celery/Redis async execution + NLP strategy generation
+
+**Built:**
+- GET /strategies — lists preset strategies with parameter metadata
+- POST /backtest — creates BacktestRun row (status=pending), returns ID immediately
+- Celery + Redis async pipeline — run_backtest_task runs full engine+metrics in the background, updates BacktestRun status (pending -> running -> done/failed)
+- GET /backtest/{id} — polling endpoint, returns status + results once done
+- NLP-to-strategy endpoint (POST /strategies/from-description) — Gemini (primary) + Groq (fallback) generate strategy code from plain English; two-gate validation (ast.parse syntax check -> restricted exec() into namespace with only Strategy/Signal/SignalType) plus reused Day 4 lookahead-bias check against real AAPL data before acceptance
+- Full HTTP integration test (test_integration.py) — submit -> poll -> results, using RSI/MSFT (different combo than all previous tests) to prove generalization
+
+**Bugs fixed:**
+- Celery worker showed empty [tasks] list — celery_app.py never imported tasks.py, fixed via include=["app.core.tasks"]
+- gemini-2.5-flash deprecated for new API keys (404) — switched to gemini-flash-latest alias
+- Smart App Control blocked pip.exe/uvicorn.exe/celery.exe — worked around via python -m pip / python -m uvicorn / python -m celery
+- Docker Desktop needed manual restart + docker start on both containers after being closed
+
+**Left for later days:**
+- exec() restricts available names but is NOT true sandboxing — no restriction on imports, filesystem, or network access. Real sandboxing (restricted imports, execution timeouts, no filesystem/network access) is Day 7's job.
+- --pool=solo means the Celery worker can only run one task at a time — no real concurrency yet (Windows dev limitation; production would use prefork or similar on Linux)
+- If the Celery worker isn't running, submitted backtests get stuck at "pending" forever with no user-facing warning
+- No frontend yet — all testing done via Swagger UI / HTTP scripts (Day 6)
+
+**Resume note:** Live frontend link (https://backtesting-frontend-by65.onrender.com) added to resume ahead of Day 6 completion — Render URL is permanent and auto-deploys from main, so finishing Day 6 within ~2-3 days will make the link accurate before it's likely to be reviewed.
+
+
+
+
