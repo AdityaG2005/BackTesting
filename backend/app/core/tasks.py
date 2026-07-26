@@ -6,6 +6,7 @@ from app.models import Instrument, Bar, BacktestRun
 from app.core.strategies.moving_average_crossover import MovingAverageCrossover
 from app.core.strategies.rsi_mean_reversion import RSIMeanReversion
 from app.core.engine import BacktestEngine
+from app.core.nlp_strategy import compile_strategy_class
 from app.core.metrics import (
     calculate_sharpe,
     calculate_sortino,
@@ -32,11 +33,20 @@ def run_backtest_task(backtest_run_id: int):
         session.commit()
 
         config = run.config
-        strategy_class = STRATEGY_MAP.get(config["strategy_id"])
-        if strategy_class is None:
-            run.status = "failed"
-            session.commit()
-            return
+
+        if config.get("strategy_code"):
+            try:
+                strategy_class = compile_strategy_class(config["strategy_code"])
+            except Exception:
+                run.status = "failed"
+                session.commit()
+                return
+        else:
+            strategy_class = STRATEGY_MAP.get(config["strategy_id"])
+            if strategy_class is None:
+                run.status = "failed"
+                session.commit()
+                return
 
         strategy_params = config.get("strategy_params", {})
         strategy = strategy_class(**strategy_params)
@@ -77,6 +87,10 @@ def run_backtest_task(backtest_run_id: int):
                 "max_drawdown": max_dd,
                 "win_rate": win_rate,
                 "total_trades": len(trades),
+                "equity_curve": [
+                    {"timestamp": point["timestamp"].isoformat(), "value": point["value"]}
+                    for point in equity_curve
+                ],
             }
         }
         session.commit()
@@ -86,5 +100,3 @@ def run_backtest_task(backtest_run_id: int):
         session.commit()
     finally:
         session.close()
-
-        

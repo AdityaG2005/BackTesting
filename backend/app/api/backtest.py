@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import Optional
 from app.db.session import SessionLocal
 from app.models import BacktestRun
 from app.core.tasks import run_backtest_task
@@ -14,6 +15,7 @@ class BacktestConfig(BaseModel):
     end_date: str
     starting_cash: float = 10000
     strategy_params: dict = {}
+    strategy_code: Optional[str] = None
 
 
 @router.post("/backtest")
@@ -51,4 +53,3 @@ def get_backtest(backtest_id: int):
         }
     finally:
         session.close()
-        
