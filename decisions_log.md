@@ -53,3 +53,16 @@
 
 
 
+
+- Switched from local TimescaleDB (Docker) to Render's managed PostgreSQL for the deployed backend — Render backend couldn't reach a database running on a local machine. Matches the project plan's own stated fallback ("if TimescaleDB isn't available on the free tier of your chosen host, plain Postgres is a fine fallback for the MVP demo"). No application code changed; only the DATABASE_URL differs between local (TimescaleDB via Docker) and deployed (Render Postgres) environments. Local development can still use TimescaleDB/hypertables since docker-compose is unaffected.
+
+
+
+
+
+- Render's free PostgreSQL tier expires ~30 days after creation (created [today's date], expires Aug 26, 2026) — will need to either recreate a fresh free instance and re-migrate data, or upgrade to a paid tier, before that date. Noted here as a known operational limitation of the free-tier hosting choice.
+
+
+
+
+

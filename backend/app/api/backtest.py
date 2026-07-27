@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 from app.db.session import SessionLocal
 from app.models import BacktestRun
-from app.core.tasks import run_backtest_task
+from app.core.tasks import run_backtest_task, run_backtest_sync
 
 router = APIRouter()
 
@@ -30,8 +30,9 @@ def submit_backtest(config: BacktestConfig):
         session.commit()
         session.refresh(run)
 
-        run_backtest_task.delay(run.id)
+        run_backtest_sync(run.id)
 
+        session.refresh(run)
         return {"id": run.id, "status": run.status}
     finally:
         session.close()
