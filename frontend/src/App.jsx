@@ -10,6 +10,22 @@ function App() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
+  function clearRunState() {
+    setResult(null);
+    setError(null);
+    setStatus(null);
+  }
+
+  function handleStrategyChosen(newStrategy) {
+    setStrategy(newStrategy);
+    clearRunState();
+  }
+
+  function handleModeChange() {
+    setStrategy(null);
+    clearRunState();
+  }
+
   async function handleSubmit(config) {
     setError(null);
     setResult(null);
@@ -35,7 +51,7 @@ function App() {
     <div style={{ maxWidth: "700px", margin: "2rem auto", fontFamily: "sans-serif" }}>
       <h1>Backtesting Engine</h1>
 
-      <StrategySelector onStrategyChosen={setStrategy} />
+      <StrategySelector onStrategyChosen={handleStrategyChosen} onModeChange={handleModeChange} />
 
       {strategy && (
         <BacktestConfigForm strategy={strategy} onSubmit={handleSubmit} />
@@ -47,7 +63,12 @@ function App() {
 
       {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}
 
-      {result && <ResultsDashboard results={result} />}
+      {result && (
+        <ResultsDashboard
+          results={result}
+          biasCheck={strategy?.type === "nlp" ? strategy.biasCheck : null}
+        />
+      )}
     </div>
   );
 }

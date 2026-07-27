@@ -21,6 +21,21 @@ STRATEGY_MAP = {
 }
 
 
+def _serialize_trades(trades):
+    serialized = []
+    for t in trades:
+        serialized.append({
+            "entry_timestamp": t.entry_timestamp.isoformat() if t.entry_timestamp else None,
+            "exit_timestamp": t.exit_timestamp.isoformat() if t.exit_timestamp else None,
+            "entry_price": t.entry_price,
+            "exit_price": t.exit_price,
+            "quantity": t.quantity,
+            "is_open": t.is_open,
+            "pnl": t.pnl,
+        })
+    return serialized
+
+
 def _execute_backtest(session, run):
     run.status = "running"
     session.commit()
@@ -84,6 +99,7 @@ def _execute_backtest(session, run):
                 {"timestamp": point["timestamp"].isoformat(), "value": point["value"]}
                 for point in equity_curve
             ],
+            "trades": _serialize_trades(trades),
         }
     }
     session.commit()

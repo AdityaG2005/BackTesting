@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getStrategies, generateStrategyFromDescription } from "../api/client";
 
-function StrategySelector({ onStrategyChosen }) {
+function StrategySelector({ onStrategyChosen, onModeChange }) {
   const [mode, setMode] = useState("preset");
   const [presets, setPresets] = useState([]);
   const [selectedPresetId, setSelectedPresetId] = useState("");
@@ -15,6 +15,12 @@ function StrategySelector({ onStrategyChosen }) {
     getStrategies().then(setPresets).catch(console.error);
   }, []);
 
+  function handleModeSwitch(newMode) {
+    setMode(newMode);
+    setSelectedPresetId("");
+    if (onModeChange) onModeChange();
+  }
+
   function handlePresetSelect(presetId) {
     setSelectedPresetId(presetId);
     onStrategyChosen({ type: "preset", strategyId: presetId });
@@ -26,7 +32,12 @@ function StrategySelector({ onStrategyChosen }) {
     try {
       const result = await generateStrategyFromDescription(description);
       if (result.accepted) {
-        onStrategyChosen({ type: "nlp", description, generatedCode: result.code });
+        onStrategyChosen({
+          type: "nlp",
+          description,
+          generatedCode: result.code,
+          biasCheck: result.bias_check,
+        });
       }
     } catch (error) {
       setNlpError(
@@ -42,10 +53,10 @@ function StrategySelector({ onStrategyChosen }) {
       <h2>1. Choose a Strategy</h2>
 
       <div style={{ marginBottom: "1rem" }}>
-        <button onClick={() => setMode("preset")} disabled={mode === "preset"}>
+        <button onClick={() => handleModeSwitch("preset")} disabled={mode === "preset"}>
           Existing Strategy
         </button>
-        <button onClick={() => setMode("nlp")} disabled={mode === "nlp"}>
+        <button onClick={() => handleModeSwitch("nlp")} disabled={mode === "nlp"}>
           Describe in Plain English
         </button>
       </div>
@@ -110,4 +121,3 @@ function StrategySelector({ onStrategyChosen }) {
 }
 
 export default StrategySelector;
-

@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-function ResultsDashboard({ results }) {
+function ResultsDashboard({ results, biasCheck }) {
   const metrics = [
     { label: "Final Value", value: `$${results.final_value.toLocaleString(undefined, { maximumFractionDigits: 2 })}` },
     { label: "CAGR", value: `${(results.cagr * 100).toFixed(2)}%` },
@@ -24,9 +24,27 @@ function ResultsDashboard({ results }) {
     value: point.value,
   }));
 
+  const trades = results.trades || [];
+
   return (
     <div style={{ border: "1px solid #ccc", padding: "1rem", borderRadius: "8px", marginTop: "1rem" }}>
       <h2>3. Results</h2>
+
+      {biasCheck && (
+        <div
+          style={{
+            padding: "0.5rem 0.75rem",
+            borderRadius: "6px",
+            marginBottom: "1rem",
+            backgroundColor: biasCheck.passed ? "#e6f4ea" : "#fdecea",
+            color: biasCheck.passed ? "#1e7e34" : "#c0392b",
+            fontWeight: "bold",
+          }}
+        >
+          Lookahead-Bias Check: {biasCheck.passed ? "PASS" : "FAIL"}
+          {" "}({biasCheck.checked_points} points checked)
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.75rem", marginBottom: "1.5rem" }}>
         {metrics.map((metric) => (
@@ -41,7 +59,7 @@ function ResultsDashboard({ results }) {
       </div>
 
       {chartData.length > 0 && (
-        <div>
+        <div style={{ marginBottom: "1.5rem" }}>
           <h3>Equity Curve</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
@@ -54,9 +72,52 @@ function ResultsDashboard({ results }) {
           </ResponsiveContainer>
         </div>
       )}
+
+      {trades.length > 0 && (
+        <div>
+          <h3>Trade Log</h3>
+          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+              <thead>
+                <tr style={{ borderBottom: "2px solid #ccc", textAlign: "left" }}>
+                  <th style={{ padding: "0.4rem" }}>Entry Date</th>
+                  <th style={{ padding: "0.4rem" }}>Exit Date</th>
+                  <th style={{ padding: "0.4rem" }}>Qty</th>
+                  <th style={{ padding: "0.4rem" }}>Entry Price</th>
+                  <th style={{ padding: "0.4rem" }}>Exit Price</th>
+                  <th style={{ padding: "0.4rem" }}>P&L</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trades.map((trade, i) => (
+                  <tr key={i} style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: "0.4rem" }}>{trade.entry_timestamp?.split("T")[0]}</td>
+                    <td style={{ padding: "0.4rem" }}>
+                      {trade.is_open ? "OPEN" : trade.exit_timestamp?.split("T")[0]}
+                    </td>
+                    <td style={{ padding: "0.4rem" }}>{trade.quantity}</td>
+                    <td style={{ padding: "0.4rem" }}>${trade.entry_price.toFixed(2)}</td>
+                    <td style={{ padding: "0.4rem" }}>
+                      {trade.exit_price ? `$${trade.exit_price.toFixed(2)}` : "—"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "0.4rem",
+                        color: trade.pnl == null ? "#666" : trade.pnl >= 0 ? "#1e7e34" : "#c0392b",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {trade.pnl != null ? `$${trade.pnl.toFixed(2)}` : "N/A"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default ResultsDashboard;
-
