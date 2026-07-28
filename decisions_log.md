@@ -72,3 +72,16 @@
 
 
 
+## Day 6
+
+- **Migrated from local TimescaleDB to Render PostgreSQL for deployment** — deployed backend cannot reach a database on the developer's local machine. DATABASE_URL now read via os.getenv() with local Docker as fallback, so the same code works in both environments without modification. Local development still uses TimescaleDB/hypertables via Docker; only the deployed path uses plain Postgres.
+- **Synchronous fallback (run_backtest_sync) instead of paying for a background worker or forcing Celery on a free tier without worker support** — backtests complete in ~1-2 seconds, making a queue unnecessary at this scale for a demo deployment. Both run_backtest_task (Celery, used locally) and run_backtest_sync (deployed) call the same shared _execute_backtest function — no duplicated business logic, only the trigger mechanism differs.
+- **NLP-generated strategies are re-validated (bias check) on every generation; presets are not** — presets are fixed, hand-written code already verified once at development time (Day 4). Every NLP generation produces genuinely new code that's never been checked before, so runtime verification is necessary each time. This is why the bias-check badge appears only in the NLP flow in the UI, by design.
+- **CORS middleware added ahead of schedule (originally a Day 7 item)** — became a hard blocker for local frontend testing against the deployed backend immediately, so it was pulled forward rather than deferred.
+- **Explicit onModeChange callback to clear stale results** — React does not automatically reset unrelated component state on user interaction; state that should reset together across sibling components must be wired explicitly via a shared parent handler.
+
+
+
+
+
+

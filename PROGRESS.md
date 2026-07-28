@@ -101,3 +101,36 @@
 
 
 
+
+## Day 6 — React frontend + cloud deployment migration
+
+**Built (as planned):**
+- API client module (client.js) — centralized backend calls, browser-side polling matching test_integration.py's pattern
+- StrategySelector — preset list + NLP description input + disabled code editor toggle (visual only, Day 7 makes it functional)
+- BacktestConfigForm — ticker/date/capital inputs matching POST /backtest schema
+- App.jsx orchestration — submit -> poll -> display flow with state management
+- ResultsDashboard — metric cards, Recharts equity curve, trade log table (color-coded P&L), conditional bias-check PASS/FAIL badge for NLP strategies
+
+**Built (unplanned but necessary):**
+- Made NLP-generated strategies actually executable during real backtests (previously only validated, not run) — tasks.py now compiles and runs generated code via compile_strategy_class
+- Migrated database from local-only TimescaleDB (Docker) to Render-hosted PostgreSQL — deployed backend couldn't reach localhost. session.py now reads DATABASE_URL from env var, falls back to local Docker
+- Deployed Redis (Render Key Value, free tier) for cloud use; celery_app.py reads REDIS_URL from env var
+- Built synchronous fallback (run_backtest_sync) for deployment, since Render free tier has no Background Worker option — shares _execute_backtest logic with the Celery task (one source of truth, two entry points)
+- Added CORS middleware (originally planned for Day 7, needed immediately to unblock local frontend -> deployed backend testing)
+- Fixed a state bug: switching strategy selection modes didn't clear stale results (required manual refresh) — fixed via explicit onModeChange callback
+
+**Left for later days:**
+- Code editor toggle is visual only, non-functional — Day 7 makes it actually execute (with real sandboxing)
+- exec() still not truly sandboxed — restricted imports, execution timeouts, no filesystem/network access still needed (Day 7)
+- Deployed backend runs backtests synchronously, not via Celery/Redis — async architecture is real and demonstrated locally, but not used in the deployed path due to free-tier hosting constraints
+- Render free Postgres expires ~30 days after creation (need to recreate/migrate before expiry, or upgrade)
+- Render free web services cold-start after ~15 min idle (~10-50s delay on first request) — known hosting limitation
+
+**Live URLs (fully functional end-to-end as of today):**
+- Frontend: https://backtesting-frontend-by65.onrender.com
+- Backend: https://backtesting-backend-66at.onrender.com
+
+
+
+
+
