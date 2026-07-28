@@ -66,3 +66,9 @@
 
 
 
+- Render free tier spins down web services after ~15 min inactivity; first request after idle takes ~10-50s to "wake up." Known, accepted limitation of free-tier hosting for a personal/demo project — not a code issue.
+
+
+
+
+
