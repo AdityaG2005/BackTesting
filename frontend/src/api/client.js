@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://backtesting-backend-66at.onrender.com";
+const API_URL = "http://localhost:8000";
 
 export async function getStrategies() {
   const response = await axios.get(`${API_URL}/strategies`);
